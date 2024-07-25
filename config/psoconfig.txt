@@ -1,4 +1,4 @@
 psourl=https://yourpsoinstance/IFSSchedulingRESTfulGateway/api/v1/scheduling
 accountid=Default
 userName=administrator
-password=yourpassword3
+password=yourpassword
