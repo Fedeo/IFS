@@ -1,0 +1,4 @@
+client_id=IFS_connect
+client_secret=client_secret_as_from_IAM_Client
+username=TISCNL
+password=yourpassword
