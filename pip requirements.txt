@@ -1,0 +1,20 @@
+#list of libraries, use !pip freeze > 'pip requirements.txt' to install libs from this file
+datetime 
+isodate
+pandas as pd
+numpy as np
+xml.etree.ElementTree as ET
+matplotlib.pyplot as plt
+seaborn as sns
+requests
+folium
+os
+beautifultable 
+openpyxl
+random
+requests
+json
+time
+
+
+
