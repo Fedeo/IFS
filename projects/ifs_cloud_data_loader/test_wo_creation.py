@@ -5,25 +5,48 @@ from ifscloud.object.WorkTaskResource import WorkTaskResource
 from ifscloud.object.WorkTaskAddress import WorkTaskAddress
 from ifscloud.object.WorkTask import WorkTask
 from ifscloud.object.WorkOrder import WorkOrder
-from ifscloud.helper.IfsCloudConnection import Authentication
+from ifscloud.helper.IfsCloudConnection import IfsCloudConnection
+from ifscloud.object.ReceiveWo import ReceiveWo
+from datetime import datetime
+from datetime import timedelta
+import random
+
+################################################### Define Variables #################################################################
+
+#Define EarlyStart and LatestFinish
+now = datetime.now()
+end_date = now + timedelta(days=30)
+earliestStart = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+latestFinish = end_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+#Variables
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+resourceGroup = 1353
+
+# Work Types generator
+workTypes = ["10", "20", "30", "40", "50", "60"]
+workType = random.choice(workTypes)
+
+
+#######################################################################################################################################
 
 # Example usage
-auth = Authentication(
+connection = IfsCloudConnection(
     ifs_cloud_instance="ohot-d04.build.ifsdemoworld.com",
     ifs_cloud_instance_id="ohotd041",
-    config_file_path="../config/real-ifscloudconfig.txt"
+    config_file_path="./config/real-ifscloudconfig.txt"
 )
 
-access_token = auth.get_access_token()
+access_token = connection.get_access_token()
 
 # Example usage
 competency1 = TaskResourceCompetency(
-    CompetencyId="CompetencyId1",
-    CompetencyLevelId="CompetencyLevelId1",
-    CompetencyGroupId="CompetencyGroupId1"
+    CompetencyId="1025",
+    CompetencyLevelId="4",
+    CompetencyGroupId="50"
 )
 
-# Example usage
+# Example, not used here
 competency2 = TaskResourceCompetency(
     CompetencyId="CompetencyId2",
     CompetencyLevelId="CompetencyLevelId2",
@@ -35,8 +58,8 @@ work_task_resource1 = WorkTaskResource(
     SourcingOption="InternallySourced",
     PlannedHours=2.5,
     PlannedQuantity=1,
-    ResourceGroupSeq=123,
-    TaskResourcCompetencyArray=[competency1,competency2]
+    ResourceGroupSeq=resourceGroup,
+    TaskResourcCompetencyArray=[competency1]
 )
 
 work_task_resource2 = WorkTaskResource(
@@ -44,7 +67,7 @@ work_task_resource2 = WorkTaskResource(
     SourcingOption="InternallySourced",
     PlannedHours=1.5,
     PlannedQuantity=1,
-    ResourceGroupSeq=123
+    ResourceGroupSeq=resourceGroup
 )
 
 work_task_address = WorkTaskAddress(
@@ -62,11 +85,11 @@ work_task = WorkTask(
     OrganizationId="211",
     Description="WorkTask created using WorkOrderServices API",
     ExcludeFromScheduling=False,
-    WorkTypeId="workType",
-    EarliestStart="2024-03-29T08:00:00Z",
-    LatestFinish="2024-12-31T14:00:00Z",
+    WorkTypeId=workType,
+    EarliestStart=earliestStart,
+    LatestFinish=latestFinish,
     Duration=2.5,
-    WorkTaskResourceArray=[work_task_resource1,work_task_resource2],
+    WorkTaskResourceArray=[work_task_resource1],
     WorkTaskAddressArray=[work_task_address]
 )
 
@@ -75,8 +98,13 @@ work_order = WorkOrder(
     ErrDescr="Test API for Task with address and demand",
     OrgCode="211",
     Contract="211",
-    OriginatingSystemId="timestamp",
+    OriginatingSystemId=timestamp,
     WorkTaskArray=[work_task]
 )
 
-print(work_order.to_json())
+receive_work_order = ReceiveWo(WorkOrder= work_order)
+
+#print(work_task.to_json())
+#print(receive_work_order.to_json())
+
+connection.create_work_order(work_order=receive_work_order, access_token=access_token)
