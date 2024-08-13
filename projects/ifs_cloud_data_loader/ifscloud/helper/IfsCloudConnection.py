@@ -1,5 +1,5 @@
 import requests
-
+import json
 from ifscloud.object import ReceiveWo
 
 class IfsCloudConnection:
@@ -59,5 +59,56 @@ class IfsCloudConnection:
             newWorkOrder = work_order_response.json()['value']
         else:
             print("Failed to create work order:", work_order_response.status_code, work_order_response.text)
+            newWorkOrder=None
 
-            
+        return newWorkOrder
+
+    def release_work_order(self, access_token, work_order: str):
+        #Release all tasks in the work order
+        urlGetAllTasksPerWO = f"https://{self.ifs_cloud_instance}/main/ifsapplications/projection/v1/WorkTasksHandling.svc/JtTaskSet?$filter=(WoNo eq {work_order})"
+
+        # Headers for the request
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": f"Bearer {access_token}"
+        }
+
+        # Make the GET request to get the e-tag of the work order
+        responseGetTasksPerWorkOrder = requests.get(urlGetAllTasksPerWO, headers=headers)
+        responseJson = json.loads(responseGetTasksPerWorkOrder.text)
+
+        #Number of tasks to release
+        nbrTask = len(responseJson['value'])
+
+        #Loop through all the task
+        for taskIndex in range(nbrTask):
+            taskId = responseJson['value'][taskIndex]['TaskSeq']
+
+            #Get the etag for the task
+            urlGetTask = f"https://{self.ifs_cloud_instance}/main/ifsapplications/projection/v1/WorkTasksHandling.svc/JtTaskSet(TaskSeq={taskId})"
+            headers = {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": f"Bearer {access_token}"
+            }
+            responseGetTask = requests.get(urlGetTask, headers=headers)
+            responseJsonTask = json.loads(responseGetTask.text)
+            etagTask = responseJsonTask['@odata.etag']
+
+
+            #Release the task
+            url = f"https://{self.ifs_cloud_instance}/int/ifsapplications/projection/v1/WorkTaskServices.svc/WorkTaskSet(TaskSeq={taskId})/IfsApp.WorkTaskServices.JtTask_Release"
+            headers = {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": f"Bearer {access_token}",
+                "If-Match": etagTask
+            }
+            payload = "{}"
+            response = requests.post(url, headers=headers, data=payload)
+
+            # Check the response
+            if response.status_code != 204:
+                print("Failed to release the work task:", response.status_code, response.text)
+

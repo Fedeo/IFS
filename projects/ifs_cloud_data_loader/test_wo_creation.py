@@ -56,7 +56,7 @@ competency2 = TaskResourceCompetency(
 work_task_resource1 = WorkTaskResource(
     DemandType="PERSON",
     SourcingOption="InternallySourced",
-    PlannedHours=2.5,
+    PlannedHours=0.5,
     PlannedQuantity=1,
     ResourceGroupSeq=resourceGroup,
     TaskResourcCompetencyArray=[competency1]
@@ -73,6 +73,7 @@ work_task_resource2 = WorkTaskResource(
 work_task_address = WorkTaskAddress(
     AddressId="1",
     Address1="Via della Pelliccia, 12",
+    Address6="41.957268|12.5185716",
     ZipCode="00153",
     City="Rome",
     State="",
@@ -107,4 +108,5 @@ receive_work_order = ReceiveWo(WorkOrder= work_order)
 #print(work_task.to_json())
 #print(receive_work_order.to_json())
 
-connection.create_work_order(work_order=receive_work_order, access_token=access_token)
+wo = connection.create_work_order(work_order=receive_work_order, access_token=access_token)
+connection.release_work_order(work_order=wo, access_token=access_token)
