@@ -41,6 +41,31 @@ class IfsCloudConnection:
         else:
             print("Failed to retrieve access token:", auth_response.status_code, auth_response.text)
             return None
+        
+
+    def getWorkOrderEtag(self, access_token, work_order: str):
+        #Get the e-tag
+        urlGetWorkOrder = f"https://{ifs_cloud_instance}/main/ifsapplications/projection/v1/ActiveWorkOrdersHandling.svc/ActiveSeparateSet?$filter=(WoNo eq {newWorkOrder})"
+
+        # Headers for the request
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": f"Bearer {access_token}"
+        }
+
+        # Make the GET request to get the e-tag of the work order
+        responseGetWorkOrder = requests.get(urlGetWorkOrder, headers=headers)
+        responseJson = json.loads(responseGetWorkOrder.text)
+
+        if responseGetWorkOrder.status_code == 200:
+            # Extract the ETag from the response headers
+            etagWO = responseJson['value'][0]['@odata.etag']
+            return etagWO
+        else:
+            print("Failed to get  work order etag:", responseGetWorkOrder.status_code, responseGetWorkOrder.text)
+            return None
+
 
     def create_work_order(self, access_token, work_order: ReceiveWo):
         work_order_url = f"https://{self.ifs_cloud_instance}/int/ifsapplications/projection/v1/WorkOrderServices.svc/ReceiveWorkOrder"

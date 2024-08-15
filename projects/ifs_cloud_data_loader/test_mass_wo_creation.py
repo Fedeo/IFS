@@ -16,28 +16,21 @@ import random
 ################################################### Define Variables #################################################################
 
 # Workorders to Create
-NBR_WOS=5
+NBR_WOS=30
 
-# Define Rectangle of Lat/Long for Vienna (NOTE: to use Lat Long you need workflow CreateTaskMapPosition imported into your IFS CLoud environment)
-top_left = [48.2136874,16.3543268]
-bottom_right = [48.146092,16.5035646]
+# Define Rectangle of Lat/Long for VIENNA (NOTE: to use Lat Long you need workflow CreateTaskMapPosition imported into your IFS CLoud environment)
+#top_left = [48.2136874,16.3543268]
+#bottom_right = [48.146092,16.5035646]
+
+# Define Rectangle of Lat/Long for MILAN (NOTE: to use Lat Long you need workflow CreateTaskMapPosition imported into your IFS CLoud environment)
+top_left = [45.625502,8.9949501]
+bottom_right = [45.3939934,9.3218875]
 
 # Work Types and associated days of SLA and Duration Generator
 workTypes = [["10",7,2],["20",2,1.5],["30",3,2],["40",7,3],["50",14,2.5],["60",10,2]]
-workType = random.choice(workTypes)
-
-#Define EarlyStart and LatestFinish
-now = datetime.now()
-end_date = now + timedelta(days=workType[1])
-earliestStart = now.strftime("%Y-%m-%dT%H:%M:%SZ")
-latestFinish = end_date.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 #Variables
-timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 resourceGroup = 1353
-
-
-
 
 #######################################################################################################################################
 connection = IfsCloudConnection(
@@ -50,12 +43,22 @@ access_token = connection.get_access_token()
 
 for index in range(NBR_WOS):
 
-    print(f"Creating WO number {index}")
+    # Select Variables
+    workType = random.choice(workTypes)
+    now = datetime.now()
+    end_date = now + timedelta(days=workType[1])
 
+    # Define EarlyStart and LatestFinish
+    earliestStart = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+    latestFinish = end_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
     # Generate Lat/Long
     latitude = random.uniform(top_left[0], bottom_right[0])
     longitude = random.uniform(top_left[1], bottom_right[1])
     lat_long = f'{latitude:.6f}' + "|" + f'{longitude:.6f}'
+
+    print(f"Creating WO number {index} - worktype:{workType}")
 
     # Example usage
     work_task_resource = WorkTaskResource(
@@ -66,7 +69,6 @@ for index in range(NBR_WOS):
         ResourceGroupSeq=resourceGroup,
         TaskResourcCompetencyArray=[]
     )
-
 
     work_task_address = WorkTaskAddress(
         AddressId="1",
